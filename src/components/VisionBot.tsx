@@ -368,14 +368,15 @@ export function VisionBot() {
                       ? 'Faça upload de um print do gráfico para receber o sinal'
                       : 'Inicie a captura de tela e capture um frame do gráfico'}
                   </p>
-                  <div className="text-left p-4 bg-black/20 rounded-xl">
-                    <p className="text-sm text-secondary font-semibold mb-2">⚡ Motor Local Ativo</p>
+                    <div className="text-left p-4 bg-black/20 rounded-xl">
+                    <p className="text-sm text-secondary font-semibold mb-2">⚡ Motor Local com 17 Filtros</p>
                     <ul className="text-xs text-muted-foreground space-y-1">
-                      <li>• Análise de cores de velas (Verde/Vermelha)</li>
-                      <li>• Detecção de direção dos indicadores</li>
-                      <li>• Regra de Ouro: Só opera NA COR da última vela</li>
-                      <li>• 10 filtros de confirmação</li>
-                      <li>• Sem dependência de API externa</li>
+                      <li>• VERDE = ALTA (Bullish) | VERMELHA = BAIXA (Bearish)</li>
+                      <li>• Momentum e Williams por INCLINAÇÃO (não cruzamento)</li>
+                      <li>• REGRA DE OURO: CALL só com verde, PUT só com vermelha</li>
+                      <li>• Score 8-10: Entrada FORTE ($350-$824)</li>
+                      <li>• Score 6-7: Entrada Padrão ($45-$150)</li>
+                      <li>• Score 0-5: NÃO ENTRAR (aguardar)</li>
                     </ul>
                   </div>
                 </motion.div>
