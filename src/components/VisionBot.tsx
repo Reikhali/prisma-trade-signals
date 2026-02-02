@@ -24,7 +24,6 @@ export function VisionBot() {
     setImageUrl(url);
     setResult(null);
     
-    // Analisar imagem
     setIsAnalyzing(true);
     try {
       const img = new Image();
@@ -52,9 +51,7 @@ export function VisionBot() {
   const startScreenCapture = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { 
-          displaySurface: 'window',
-        } as MediaTrackConstraints,
+        video: { displaySurface: 'window' } as MediaTrackConstraints,
         audio: false,
       });
       
@@ -98,7 +95,6 @@ export function VisionBot() {
     
     ctx.drawImage(video, 0, 0);
     
-    // Converter para blob e criar URL
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       
@@ -107,7 +103,6 @@ export function VisionBot() {
       setResult(null);
       setIsAnalyzing(true);
       
-      // Criar imagem e analisar
       const img = new Image();
       img.onload = async () => {
         const analysis = await createAnalysisFromImage(img);
@@ -128,292 +123,295 @@ export function VisionBot() {
   };
   
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <PrismaLogo size={56} />
-            <div>
-              <h1 className="text-3xl md:text-4xl font-display font-bold prisma-text">
-                Prisma IA Vision
-              </h1>
-              <p className="text-muted-foreground">Motor de Análise Local - Sem API</p>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Gradient - Prisma Style */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[hsl(280,100%,8%)] via-background to-[hsl(320,80%,8%)]" />
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/15 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-secondary/15 rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[120px]" />
+      </div>
+      
+      <div className="relative z-10 p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header with Rotating Logo */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <PrismaLogo size={80} />
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-2">
+              <span className="prisma-text">Prisma IA</span>
+              <span className="text-foreground"> Vision</span>
+            </h1>
+            <p className="text-muted-foreground text-lg">Motor de Análise Local - 24 Filtros - Sem API</p>
+            
+            <div className="flex justify-center gap-3 mt-6">
+              <Button
+                variant={mode === 'upload' ? 'default' : 'outline'}
+                onClick={() => { setMode('upload'); resetAnalysis(); }}
+                className={mode === 'upload' ? 'prisma-button' : 'border-primary/50 hover:bg-primary/10'}
+                size="lg"
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                Upload
+              </Button>
+              <Button
+                variant={mode === 'capture' ? 'default' : 'outline'}
+                onClick={() => { setMode('capture'); resetAnalysis(); }}
+                className={mode === 'capture' ? 'prisma-button' : 'border-primary/50 hover:bg-primary/10'}
+                size="lg"
+              >
+                <MonitorPlay className="w-5 h-5 mr-2" />
+                Captura ao Vivo
+              </Button>
             </div>
           </div>
           
-          {/* Mode Tabs */}
-          <div className="flex justify-center gap-2 mt-6">
-            <Button
-              variant={mode === 'upload' ? 'default' : 'outline'}
-              onClick={() => { setMode('upload'); resetAnalysis(); }}
-              className={mode === 'upload' ? 'prisma-button' : ''}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload
-            </Button>
-            <Button
-              variant={mode === 'capture' ? 'default' : 'outline'}
-              onClick={() => { setMode('capture'); resetAnalysis(); }}
-              className={mode === 'capture' ? 'prisma-button' : ''}
-            >
-              <MonitorPlay className="w-4 h-4 mr-2" />
-              Captura ao Vivo
-            </Button>
-          </div>
-        </div>
-        
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left Column - Input */}
-          <div className="space-y-6">
-            {mode === 'upload' ? (
-              /* Upload Mode */
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="prisma-card rounded-2xl p-6"
-              >
-                <div
-                  onDrop={handleDrop}
-                  onDragOver={(e) => e.preventDefault()}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`
-                    relative border-2 border-dashed rounded-xl p-8
-                    transition-all cursor-pointer
-                    ${imageUrl 
-                      ? 'border-primary/50 bg-primary/5' 
-                      : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5'}
-                  `}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Left Column - Input */}
+            <div className="space-y-6">
+              {mode === 'upload' ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="prisma-card rounded-2xl p-6"
                 >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                    className="hidden"
-                  />
-                  
-                  {imageUrl ? (
-                    <div className="relative">
-                      <img 
-                        src={imageUrl} 
-                        alt="Gráfico" 
-                        className="w-full rounded-lg"
-                      />
-                      <button
-                        onClick={(e) => { e.stopPropagation(); resetAnalysis(); }}
-                        className="absolute top-2 right-2 p-2 bg-black/50 rounded-full hover:bg-black/70"
-                      >
-                        <X className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <ImageIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-lg font-semibold text-white mb-2">
-                        Arraste seu print do gráfico aqui
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        ou clique para selecionar
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ) : (
-              /* Capture Mode */
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="prisma-card rounded-2xl p-6"
-              >
-                <div className="relative aspect-video bg-black/50 rounded-xl overflow-hidden mb-4">
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-contain"
-                    playsInline
-                    muted
-                  />
-                  
-                  {!isCapturing && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <Camera className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">
-                          Clique em "Iniciar Captura" para começar
-                        </p>
+                  <div
+                    onDrop={handleDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`
+                      relative border-2 border-dashed rounded-xl p-8
+                      transition-all cursor-pointer
+                      ${imageUrl 
+                        ? 'border-primary/50 bg-primary/5' 
+                        : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5'}
+                    `}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                      className="hidden"
+                    />
+                    
+                    {imageUrl ? (
+                      <div className="relative">
+                        <img src={imageUrl} alt="Gráfico" className="w-full rounded-lg" />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); resetAnalysis(); }}
+                          className="absolute top-2 right-2 p-2 bg-card/80 rounded-full hover:bg-card"
+                        >
+                          <X className="w-4 h-4 text-foreground" />
+                        </button>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="text-center py-12">
+                        <ImageIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-lg font-semibold text-foreground mb-2">
+                          Arraste seu print do gráfico aqui
+                        </p>
+                        <p className="text-sm text-muted-foreground">ou clique para selecionar</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="prisma-card rounded-2xl p-6"
+                >
+                  <div className="relative aspect-video bg-card/50 rounded-xl overflow-hidden mb-4">
+                    <video ref={videoRef} className="w-full h-full object-contain" playsInline muted />
+                    
+                    {!isCapturing && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <Camera className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">Clique em "Iniciar Captura" para começar</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {isCapturing && (
+                      <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-destructive/80 rounded-full">
+                        <div className="w-2 h-2 bg-destructive-foreground rounded-full animate-pulse" />
+                        <span className="text-xs text-destructive-foreground font-medium">AO VIVO</span>
+                      </div>
+                    )}
+                  </div>
                   
-                  {isCapturing && (
-                    <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-red-500/80 rounded-full">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                      <span className="text-xs text-white font-medium">AO VIVO</span>
+                  <div className="flex gap-3">
+                    {!isCapturing ? (
+                      <Button onClick={startScreenCapture} className="flex-1 prisma-button">
+                        <MonitorPlay className="w-4 h-4 mr-2" />
+                        Iniciar Captura
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={captureFrame}
+                          className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+                          disabled={isAnalyzing}
+                        >
+                          {isAnalyzing ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Scan className="w-4 h-4 mr-2" />
+                          )}
+                          {isAnalyzing ? 'Analisando...' : 'Capturar & Analisar'}
+                        </Button>
+                        <Button onClick={stopCapture} variant="destructive">
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  
+                  {imageUrl && (
+                    <div className="mt-4">
+                      <p className="text-sm text-muted-foreground mb-2">Última captura:</p>
+                      <img src={imageUrl} alt="Captura" className="w-full rounded-lg border border-border" />
                     </div>
                   )}
-                </div>
-                
-                <div className="flex gap-3">
-                  {!isCapturing ? (
-                    <Button
-                      onClick={startScreenCapture}
-                      className="flex-1 prisma-button"
-                    >
-                      <MonitorPlay className="w-4 h-4 mr-2" />
-                      Iniciar Captura
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        onClick={captureFrame}
-                        className="flex-1 bg-secondary hover:bg-secondary/80"
-                        disabled={isAnalyzing}
-                      >
-                        {isAnalyzing ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <Scan className="w-4 h-4 mr-2" />
-                        )}
-                        {isAnalyzing ? 'Analisando...' : 'Capturar & Analisar'}
-                      </Button>
-                      <Button
-                        onClick={stopCapture}
-                        variant="destructive"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-                
-                {imageUrl && (
-                  <div className="mt-4">
-                    <p className="text-sm text-muted-foreground mb-2">Última captura:</p>
-                    <img 
-                      src={imageUrl} 
-                      alt="Captura" 
-                      className="w-full rounded-lg border border-border"
-                    />
-                  </div>
+                </motion.div>
+              )}
+              
+              {/* Analyzing State - AI Style Avatar */}
+              <AnimatePresence>
+                {isAnalyzing && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="prisma-card rounded-2xl p-8 text-center"
+                  >
+                    <div className="relative w-32 h-32 mx-auto mb-6">
+                      <motion.div
+                        className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-accent to-secondary opacity-30"
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                      <motion.div
+                        className="absolute inset-2 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                      />
+                      <div className="absolute inset-4 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                        <PrismaLogo size={64} />
+                      </div>
+                      <motion.div
+                        className="absolute inset-0 border-4 border-transparent border-t-secondary border-r-primary rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      />
+                    </div>
+                    <p className="text-xl font-display font-semibold prisma-text mb-2">Analisando Gráfico...</p>
+                    <p className="text-muted-foreground">Processando 24 filtros, detectando velas e indicadores</p>
+                    <div className="flex justify-center gap-1 mt-4">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <motion.div
+                          key={i}
+                          className="w-2 h-2 rounded-full bg-primary"
+                          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
                 )}
+              </AnimatePresence>
+              
+              {/* Candles & Flow */}
+              {result && (
+                <>
+                  <CandleVisualizer candles={result.candles} />
+                  <FlowAnalyzer flow={result.flow} indicators={result.indicators} patterns={result.patterns} />
+                </>
+              )}
+            </div>
+            
+            {/* Right Column - Results */}
+            <div className="space-y-6">
+              <AnimatePresence mode="wait">
+                {result ? (
+                  <motion.div
+                    key="result"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                  >
+                    <SignalCard signal={result.signal} />
+                  </motion.div>
+                ) : !isAnalyzing && (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="prisma-card rounded-2xl p-8 text-center"
+                  >
+                    <Zap className="w-16 h-16 mx-auto text-primary mb-4" />
+                    <h3 className="text-xl font-display font-semibold text-foreground mb-2">
+                      Pronto para Analisar
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      {mode === 'upload' 
+                        ? 'Faça upload de um print do gráfico para receber o sinal'
+                        : 'Inicie a captura de tela e capture um frame do gráfico'}
+                    </p>
+                    <div className="text-left p-4 bg-card/50 rounded-xl">
+                      <p className="text-sm text-secondary font-semibold mb-2">⚡ Motor Local com 24 Filtros</p>
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        <li>• VERDE = ALTA (Bullish) | VERMELHA = BAIXA (Bearish)</li>
+                        <li>• Momentum e Williams por INCLINAÇÃO (não cruzamento)</li>
+                        <li>• REGRA DE OURO: CALL só com verde, PUT só com vermelha</li>
+                        <li>• Score 8-10: Entrada FORTE ($350-$824)</li>
+                        <li>• Score 6-7: Entrada Padrão ($45-$150)</li>
+                        <li>• Score 0-5: NÃO ENTRAR (aguardar)</li>
+                      </ul>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {/* Rules Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="prisma-card rounded-2xl p-6"
+              >
+                <h3 className="text-lg font-display font-semibold text-foreground mb-4">
+                  🎯 Regra de Ouro do Prisma IA
+                </h3>
+                <div className="space-y-3">
+                  <div className="p-3 bg-success/10 rounded-xl border border-success/30">
+                    <p className="text-success font-medium">
+                      ✅ CALL: Última vela VERDE + Tendência bullish + Indicadores subindo
+                    </p>
+                  </div>
+                  <div className="p-3 bg-destructive/10 rounded-xl border border-destructive/30">
+                    <p className="text-destructive font-medium">
+                      ✅ PUT: Última vela VERMELHA + Tendência bearish + Indicadores descendo
+                    </p>
+                  </div>
+                  <div className="p-3 bg-warning/10 rounded-xl border border-warning/30">
+                    <p className="text-warning font-medium">
+                      ⚠️ NUNCA opera contra a cor da última vela
+                    </p>
+                  </div>
+                </div>
               </motion.div>
-            )}
-            
-            {/* Analyzing State */}
-            <AnimatePresence>
-              {isAnalyzing && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="prisma-card rounded-2xl p-6 text-center"
-                >
-                  <div className="relative w-24 h-24 mx-auto mb-4">
-                    <PrismaLogo size={96} />
-                    <motion.div
-                      className="absolute inset-0 border-4 border-transparent border-t-secondary rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    />
-                  </div>
-                  <p className="text-lg font-semibold text-white mb-2">
-                    Analisando Gráfico...
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Processando pixels, detectando velas e indicadores
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {/* Candles & Flow */}
-            {result && (
-              <>
-                <CandleVisualizer candles={result.candles} />
-                <FlowAnalyzer 
-                  flow={result.flow} 
-                  indicators={result.indicators}
-                  patterns={result.patterns}
-                />
-              </>
-            )}
-          </div>
-          
-          {/* Right Column - Results */}
-          <div className="space-y-6">
-            <AnimatePresence mode="wait">
-              {result ? (
-                <motion.div
-                  key="result"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <SignalCard signal={result.signal} />
-                </motion.div>
-              ) : !isAnalyzing && (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="prisma-card rounded-2xl p-8 text-center"
-                >
-                  <Zap className="w-16 h-16 mx-auto text-primary mb-4" />
-                  <h3 className="text-xl font-display font-semibold text-white mb-2">
-                    Pronto para Analisar
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {mode === 'upload' 
-                      ? 'Faça upload de um print do gráfico para receber o sinal'
-                      : 'Inicie a captura de tela e capture um frame do gráfico'}
-                  </p>
-                    <div className="text-left p-4 bg-black/20 rounded-xl">
-                    <p className="text-sm text-secondary font-semibold mb-2">⚡ Motor Local com 17 Filtros</p>
-                    <ul className="text-xs text-muted-foreground space-y-1">
-                      <li>• VERDE = ALTA (Bullish) | VERMELHA = BAIXA (Bearish)</li>
-                      <li>• Momentum e Williams por INCLINAÇÃO (não cruzamento)</li>
-                      <li>• REGRA DE OURO: CALL só com verde, PUT só com vermelha</li>
-                      <li>• Score 8-10: Entrada FORTE ($350-$824)</li>
-                      <li>• Score 6-7: Entrada Padrão ($45-$150)</li>
-                      <li>• Score 0-5: NÃO ENTRAR (aguardar)</li>
-                    </ul>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {/* Rules Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="prisma-card rounded-2xl p-6"
-            >
-              <h3 className="text-lg font-display font-semibold text-white mb-4">
-                🎯 Regra de Ouro do Prisma IA
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
-                  <p className="text-emerald-300 font-medium">
-                    ✅ CALL: Última vela VERDE + Tendência bullish + Indicadores subindo
-                  </p>
-                </div>
-                <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/30">
-                  <p className="text-red-300 font-medium">
-                    ✅ PUT: Última vela VERMELHA + Tendência bearish + Indicadores descendo
-                  </p>
-                </div>
-                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30">
-                  <p className="text-amber-300 font-medium">
-                    ⚠️ NUNCA opera contra a cor da última vela
-                  </p>
-                </div>
-              </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+// Re-export do prompt para uso externo
+export { PRISMA_IA_PROMPT, PRISMA_SHORT_PROMPT } from '@/lib/prismaPrompt';
